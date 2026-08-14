@@ -54,15 +54,21 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
           {/* Brand */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="h-10 w-10 rounded-full bg-background flex items-center justify-center">
-                <span className="text-navy font-heading font-bold text-lg">A</span>
-              </div>
-              <div>
-                <p className="font-heading font-bold text-sm">WaterFilterStore</p>
-                <p className="text-[10px] opacity-60">Water Technologies</p>
-              </div>
-            </div>
+            <Link
+              to="/"
+              aria-label="WaterFilterStore home"
+              className="mb-4 inline-flex rounded-xl bg-white p-1.5 shadow-sm transition hover:shadow-md"
+            >
+              <img
+                src="/images/water-filter-store-logo.jpeg"
+                alt="WaterFilterStore — Get everything about water at one Click"
+                className="h-16 w-28 rounded-lg object-contain sm:h-[72px] sm:w-32"
+                width="128"
+                height="72"
+                loading="lazy"
+                decoding="async"
+              />
+            </Link>
             <p className="text-sm opacity-70 leading-relaxed mb-4">
               Providing clean, safe, and healthy water solutions for homes and businesses across India since 2006.
             </p>
