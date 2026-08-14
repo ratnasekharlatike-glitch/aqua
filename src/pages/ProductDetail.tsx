@@ -21,7 +21,7 @@ import SEO from "@/components/SEO";
 import { openWhatsAppWithTracking } from "@/lib/whatsapp";
 import { getGoogleShoppingUrl } from "@/lib/productUrls";
 
-const fallbackProductImage = "/images/premium-ro-purifier.png";
+const fallbackProductImage = "/images/premium-ro-purifier.webp";
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();

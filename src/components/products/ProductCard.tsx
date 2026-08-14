@@ -9,7 +9,7 @@ import gravityImage from "@/assets/mega-gravity.jpg";
 import uvImage from "@/assets/mega-uv.jpg";
 import accessoriesImage from "@/assets/mega-accessories.jpg";
 
-const fallbackProductImage = "/images/premium-ro-purifier.png";
+const fallbackProductImage = "/images/premium-ro-purifier.webp";
 
 const categoryImages: Record<string, string> = {
   commercial: commercialImage,
@@ -38,6 +38,8 @@ export default function ProductCard({ product }: { product: Product }) {
           src={image}
           alt={product.name}
           loading="lazy"
+          width={800}
+          height={800}
           className="h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-[1.04] sm:p-5"
         />
         {product.price.discount > 0 && (
