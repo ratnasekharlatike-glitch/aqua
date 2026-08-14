@@ -37,14 +37,19 @@ const absoluteImageUrl = (image, productId) => {
 export default async function handler(_request, response) {
   try {
     const endpoint = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/products?pageSize=1000`;
-    const firestoreResponse = await fetch(endpoint);
+    const statusEndpoint = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/settings/catalogStatus`;
+    const [firestoreResponse, statusResponse] = await Promise.all([fetch(endpoint), fetch(statusEndpoint)]);
     if (!firestoreResponse.ok) throw new Error(`Firestore returned ${firestoreResponse.status}`);
     const payload = await firestoreResponse.json();
+    const statusPayload = statusResponse.ok ? await statusResponse.json() : null;
+    const catalogInitialized = statusPayload
+      ? decodeFields(statusPayload.fields || {}).initialized === true
+      : false;
     const remoteProducts = (payload.documents || []).map((document) => ({
       id: document.name.split("/").pop(),
       ...decodeFields(document.fields || {}),
     }));
-    const products = remoteProducts.length > 0 ? remoteProducts : defaultProducts;
+    const products = catalogInitialized || remoteProducts.length > 0 ? remoteProducts : defaultProducts;
 
     const items = products
       .filter((product) => product.slug && product.name && product.price?.selling)
