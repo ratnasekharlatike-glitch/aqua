@@ -283,7 +283,7 @@ export default function Header() {
 
       {/* Traditional mobile dropdown */}
       {menuOpen && (
-        <div className="border-t border-slate-200 bg-white shadow-[0_18px_32px_-20px_rgba(15,23,42,0.45)] animate-in fade-in-0 slide-in-from-top-2 duration-200 lg:hidden">
+        <div className="absolute left-0 right-0 top-full z-50 border-t border-slate-200 bg-white shadow-[0_18px_32px_-20px_rgba(15,23,42,0.45)] animate-in fade-in-0 slide-in-from-top-2 duration-200 lg:hidden">
           <nav className="container max-h-[calc(100vh-97px)] overflow-y-auto py-3">
             <div className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">
               {navLinks.map((link) => (
