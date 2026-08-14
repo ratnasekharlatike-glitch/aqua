@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createOrder } from "@/lib/orders";
+import SEO from "@/components/SEO";
 
 export default function Cart() {
   const { items, removeItem, updateQuantity, clearCart, totalPrice } = useCartStore();
@@ -42,6 +43,7 @@ export default function Cart() {
   if (items.length === 0) {
     return (
       <Layout>
+        <SEO title="Shopping Cart" description="Review your selected WaterFilterStore products and order through WhatsApp." noIndex />
         <div className="container py-20 text-center">
           <ShoppingCart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
           <h1 className="font-heading font-bold text-2xl text-foreground mb-2">Your Cart is Empty</h1>
@@ -54,6 +56,7 @@ export default function Cart() {
 
   return (
     <Layout>
+      <SEO title="Shopping Cart" description="Review your selected water purifiers and complete your WaterFilterStore order through WhatsApp." noIndex />
       <div className="container py-8 md:py-12">
         <nav className="text-sm text-muted-foreground mb-6">
           <Link to="/" className="hover:text-primary">Home</Link> / <span className="text-foreground">Cart</span>

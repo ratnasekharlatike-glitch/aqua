@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Plus, X, Save } from "lucide-react";
+import { ArrowLeft, GripVertical, ImagePlus, Plus, Save, Star, Trash2, X } from "lucide-react";
 import { useProductStore } from "@/stores/productStore";
 import { categories } from "@/data/categories";
 import type { Product } from "@/data/products";
@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { moveImage, optimizeProductImage } from "@/lib/productImages";
 
 const emptyProduct = {
   name: "",
@@ -29,20 +30,12 @@ const emptyProduct = {
   solutions: [] as string[],
   specifications: {} as Record<string, string>,
   price: { selling: 0, original: 0, discount: 0 },
-  images: ["/placeholder.svg"],
+  images: [] as string[],
   stock: "in_stock" as StockStatus,
   warranty: "1 Year Comprehensive",
   rating: 0,
   reviewCount: 0,
 };
-
-const fileToDataUrl = (file: File) =>
-  new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(new Error("Failed to read image file."));
-    reader.readAsDataURL(file);
-  });
 
 export default function ProductForm() {
   const { id } = useParams();
@@ -59,6 +52,8 @@ export default function ProductForm() {
   const [solutionOption, setSolutionOption] = useState(settings.productSolutions[0] || "");
   const [specOption, setSpecOption] = useState(defaultSpecificationOptions[0].key);
   const [imageError, setImageError] = useState("");
+  const [isProcessingImages, setIsProcessingImages] = useState(false);
+  const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (isEdit && id) {
@@ -191,7 +186,11 @@ export default function ProductForm() {
       toast({ title: "Error", description: "Name and SKU are required.", variant: "destructive" });
       return;
     }
-    if (!form.images[0]) {
+    if (!form.description.trim()) {
+      toast({ title: "Description required", description: "Add a clear product description before saving.", variant: "destructive" });
+      return;
+    }
+    if (!form.images[0] || form.images[0] === "/placeholder.svg") {
       toast({ title: "Error", description: "Product image is required.", variant: "destructive" });
       return;
     }
@@ -211,21 +210,47 @@ export default function ProductForm() {
   };
 
   const handleImageFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0];
-    if (!selectedFile) return;
-
-    if (!selectedFile.type.startsWith("image/")) {
-      setImageError("Please select a valid image file.");
+    const selectedFiles = Array.from(event.target.files || []);
+    if (selectedFiles.length === 0) return;
+    const currentImages = form.images.filter((image) => image !== "/placeholder.svg");
+    if (currentImages.length + selectedFiles.length > 8) {
+      setImageError("You can add up to 8 images per product.");
+      event.target.value = "";
       return;
     }
 
+    setIsProcessingImages(true);
     try {
-      const dataUrl = await fileToDataUrl(selectedFile);
-      setForm((prev) => ({ ...prev, images: [dataUrl] }));
+      const optimizedImages = await Promise.all(selectedFiles.map(optimizeProductImage));
+      setForm((prev) => ({
+        ...prev,
+        images: [...prev.images.filter((image) => image !== "/placeholder.svg"), ...optimizedImages],
+      }));
       setImageError("");
-    } catch {
-      setImageError("Could not read image. Please try another file.");
+    } catch (error) {
+      setImageError(error instanceof Error ? error.message : "Could not process the selected images.");
+    } finally {
+      setIsProcessingImages(false);
+      event.target.value = "";
     }
+  };
+
+  const removeImage = (index: number) =>
+    setForm((current) => ({
+      ...current,
+      images: current.images.filter((_, imageIndex) => imageIndex !== index),
+    }));
+
+  const makePrimaryImage = (index: number) =>
+    setForm((current) => ({ ...current, images: moveImage(current.images, index, 0) }));
+
+  const handleImageDrop = (targetIndex: number) => {
+    if (draggedImageIndex === null || draggedImageIndex === targetIndex) return;
+    setForm((current) => ({
+      ...current,
+      images: moveImage(current.images, draggedImageIndex, targetIndex),
+    }));
+    setDraggedImageIndex(null);
   };
 
   return (
@@ -308,6 +333,9 @@ export default function ProductForm() {
                     </option>
                   ))}
                 </select>
+                <p className="text-xs text-muted-foreground">
+                  The product will automatically appear under this category on the Products page.
+                </p>
               </div>
             </div>
             <div className="space-y-2">
@@ -316,9 +344,14 @@ export default function ProductForm() {
                 id="description"
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                placeholder="Product description..."
-                rows={4}
+                placeholder="Describe the purification technology, capacity, ideal water source and customer benefit..."
+                rows={7}
+                required
               />
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>This description is shown on the product detail page.</span>
+                <span>{form.description.length} characters</span>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -535,24 +568,76 @@ export default function ProductForm() {
           </CardContent>
         </Card>
 
-        {/* Product Image */}
+        {/* Product Images */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Product Image</CardTitle>
+            <CardTitle className="flex items-center justify-between text-base">
+              <span>Product Images</span>
+              <span className="text-xs font-normal text-muted-foreground">
+                {form.images.filter((image) => image !== "/placeholder.svg").length}/8
+              </span>
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <Label htmlFor="imageFile">Upload Image</Label>
-            <Input
-              id="imageFile"
-              type="file"
-              accept="image/*"
-              onChange={handleImageFileChange}
-            />
-            <p className="text-xs text-muted-foreground">Only image files are allowed (JPG, PNG, WEBP, etc.).</p>
+          <CardContent className="space-y-4">
+            <label
+              htmlFor="imageFile"
+              className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-surface/40 px-5 py-8 text-center transition-colors hover:border-primary/50 hover:bg-primary/5"
+            >
+              <ImagePlus className="mb-2 h-8 w-8 text-primary" />
+              <span className="text-sm font-semibold text-foreground">
+                {isProcessingImages ? "Optimizing images..." : "Choose product images"}
+              </span>
+              <span className="mt-1 text-xs text-muted-foreground">JPG, PNG or WEBP · up to 8 images · 10 MB each</span>
+              <Input
+                id="imageFile"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                disabled={isProcessingImages}
+                onChange={handleImageFileChange}
+                className="sr-only"
+              />
+            </label>
+            <div className="rounded-lg bg-primary/5 px-3 py-2 text-xs leading-relaxed text-primary">
+              Images are automatically resized to a maximum of 1000 px and converted to WebP. Drag cards to change their priority; image 1 is used as the main product image.
+            </div>
             {imageError && <p className="text-sm text-destructive">{imageError}</p>}
-            {form.images[0] && (
-              <div className="h-32 w-32 bg-surface rounded-lg overflow-hidden mt-2">
-                <img src={form.images[0]} alt="Preview" className="h-full w-full object-cover" />
+            {form.images.filter((image) => image !== "/placeholder.svg").length > 0 && (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                {form.images.filter((image) => image !== "/placeholder.svg").map((image, index) => (
+                  <div
+                    key={`${image.slice(0, 40)}-${index}`}
+                    draggable
+                    onDragStart={() => setDraggedImageIndex(index)}
+                    onDragEnd={() => setDraggedImageIndex(null)}
+                    onDragOver={(event) => event.preventDefault()}
+                    onDrop={() => handleImageDrop(index)}
+                    className={`group overflow-hidden rounded-xl border bg-card shadow-sm transition-all ${draggedImageIndex === index ? "scale-95 opacity-50" : "hover:border-primary/40"}`}
+                  >
+                    <div className="relative aspect-square bg-white">
+                      <img src={image} alt={`Product preview ${index + 1}`} className="h-full w-full object-contain p-2" />
+                      <div className="absolute left-2 top-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-900/80 px-1.5 text-[11px] font-bold text-white">
+                        {index + 1}
+                      </div>
+                      {index === 0 && (
+                        <span className="absolute bottom-2 left-2 rounded-full bg-primary px-2 py-1 text-[10px] font-bold text-primary-foreground">Main image</span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between border-t px-2 py-1.5">
+                      <GripVertical className="h-4 w-4 cursor-grab text-muted-foreground" aria-label="Drag to reorder" />
+                      <div className="flex items-center gap-1">
+                        {index > 0 && (
+                          <button type="button" onClick={() => makePrimaryImage(index)} className="rounded-md p-1.5 text-muted-foreground hover:bg-primary/10 hover:text-primary" aria-label={`Make image ${index + 1} primary`}>
+                            <Star className="h-4 w-4" />
+                          </button>
+                        )}
+                        <button type="button" onClick={() => removeImage(index)} className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label={`Remove image ${index + 1}`}>
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </CardContent>

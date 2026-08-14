@@ -1,80 +1,61 @@
-import { FormEvent, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { GoogleAuthProvider, onAuthStateChanged, signInWithRedirect, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { isAuthorizedAdmin } from "@/lib/adminAuth";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const redirectPath = location.state?.from?.pathname || "/admin";
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  useEffect(() => onAuthStateChanged(auth, (user) => {
+    if (isAuthorizedAdmin(user)) navigate(redirectPath, { replace: true });
+    else if (user) {
+      setError("You are not allowed to access this page.");
+      void signOut(auth);
+    }
+  }), [navigate, redirectPath]);
+
+  const handleGoogleSignIn = async () => {
     setError("");
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate(redirectPath, { replace: true });
-    } catch {
-      setError("Invalid email or password. Please use your Firebase admin credentials.");
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+      await signInWithRedirect(auth, provider);
+    } catch (signInError) {
+      const code = typeof signInError === "object" && signInError && "code" in signInError ? String(signInError.code) : "";
+      if (code.includes("unauthorized-domain")) {
+        setError("You are not allowed to access this page.");
+      } else if (code.includes("operation-not-allowed")) {
+        setError("Google sign-in is not enabled in Firebase Authentication.");
+      } else {
+        setError("Google sign-in failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-surface flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Admin Login</CardTitle>
-          <CardDescription>Sign in with Firebase credentials to access the admin panel.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="admin@example.com"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
-                Password
-              </label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-              />
-            </div>
-
-            {error && <p className="text-sm text-destructive">{error}</p>}
-
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign In"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gradient-to-br from-slate-50 via-white to-sky-50 p-4">
+      <Button
+        type="button"
+        variant="outline"
+        className="h-16 w-16 rounded-2xl border-slate-200 bg-white p-0 shadow-lg transition-all hover:-translate-y-0.5 hover:bg-white hover:shadow-xl"
+        disabled={loading}
+        onClick={handleGoogleSignIn}
+        aria-label="Sign in with authorized Google account"
+      >
+        <img src="/images/google-g.svg" alt="" aria-hidden="true" className={`h-7 w-7 ${loading ? "animate-pulse" : ""}`} />
+      </Button>
+      {error && <p className="max-w-xs text-center text-sm text-destructive">{error}</p>}
     </div>
   );
 }

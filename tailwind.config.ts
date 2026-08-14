@@ -19,8 +19,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        heading: ["Outfit", "sans-serif"],
-        body: ["Inter", "sans-serif"],
+        heading: ["Segoe UI", "Arial", "sans-serif"],
+        body: ["Segoe UI", "Arial", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",

@@ -5,6 +5,7 @@ import Layout from "@/components/layout/Layout";
 import bgHero from "@/assets/bg-hero-dark.jpg";
 import { useBlogStore } from "@/stores/blogStore";
 import { useSiteSettingsStore } from "@/stores/siteSettingsStore";
+import SEO from "@/components/SEO";
 
 export default function BlogPost() {
   const { slug } = useParams();
@@ -15,6 +16,7 @@ export default function BlogPost() {
   if (!post) {
     return (
       <Layout>
+        <SEO title="Article Not Found" description="The requested WaterFilterStore article could not be found." noIndex />
         <section className="relative text-primary-foreground py-10 md:py-14 overflow-hidden">
           <img src={settings.heroImages.blog || bgHero} alt="" className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-navy/80" />
@@ -40,6 +42,25 @@ export default function BlogPost() {
 
   return (
     <Layout>
+      <SEO
+        title={post.title}
+        description={post.excerpt}
+        keywords={`${post.title}, ${post.category}, water purifier guide, water quality Visakhapatnam, WaterFilterStore`}
+        type="article"
+        image={post.image}
+        publishedTime={post.date}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          headline: post.title,
+          description: post.excerpt,
+          datePublished: post.date,
+          image: post.image.startsWith("http") ? post.image : `https://waterfilterstore.in${post.image}`,
+          author: { "@type": "Organization", name: "WaterFilterStore" },
+          publisher: { "@type": "Organization", name: "WaterFilterStore", url: "https://waterfilterstore.in" },
+          mainEntityOfPage: `https://waterfilterstore.in/blog/${post.slug}`,
+        }}
+      />
       <section className="relative text-primary-foreground py-10 md:py-14 overflow-hidden">
         <img src={settings.heroImages.blog || bgHero} alt="" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-navy/80" />

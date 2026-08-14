@@ -9,6 +9,8 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
+export const FORMSPREE_CONTACT_ENDPOINT = "https://formspree.io/f/mjyboapb";
+
 export type EnquiryKind = "contact_form" | "whatsapp";
 
 export interface EnquiryRecord {
@@ -40,6 +42,35 @@ export function persistContactEnquiry(input: {
     message: input.message.trim(),
     createdAt: serverTimestamp(),
   });
+}
+
+export async function submitContactToFormspree(input: {
+  name: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+}) {
+  const response = await fetch(FORMSPREE_CONTACT_ENDPOINT, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: input.name.trim(),
+      email: input.email.trim(),
+      phone: input.phone.trim(),
+      subject: input.subject.trim(),
+      message: input.message.trim(),
+      _subject: `WaterFilterStore enquiry: ${input.subject.trim()}`,
+      source: "Website contact form",
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Formspree rejected the contact submission.");
+  }
 }
 
 export function persistWhatsAppEnquiry(source: string, message: string) {

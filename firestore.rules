@@ -1,37 +1,38 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isSignedIn() {
-      return request.auth != null;
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == 'ratnasekharlatike@gmail.com';
     }
 
     // Admin-managed collections
     match /products/{docId} {
       allow read: if true;
-      allow write: if isSignedIn();
+      allow write: if isAdmin();
     }
 
     match /blogs/{docId} {
       allow read: if true;
-      allow write: if isSignedIn();
+      allow write: if isAdmin();
     }
 
     match /settings/{docId} {
       allow read: if true;
-      allow write: if isSignedIn();
+      allow write: if isAdmin();
     }
 
     // Orders created from website checkout flow.
     match /orders/{docId} {
       allow create: if true;
-      allow read, update, delete: if isSignedIn();
+      allow read, update, delete: if isAdmin();
     }
 
     // Enquiries created from website redirects.
     // Public can create, only authenticated admin can read/update/delete.
     match /enquiries/{docId} {
       allow create: if true;
-      allow read, update, delete: if isSignedIn();
+      allow read, update, delete: if isAdmin();
     }
   }
 }

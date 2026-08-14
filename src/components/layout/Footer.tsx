@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Youtube, ChevronDown } from "lucide-react";
+import { Phone, Mail, MapPin, Facebook, ChevronDown } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import bgFooter from "@/assets/bg-footer.jpg";
 import { useSiteSettingsStore } from "@/stores/siteSettingsStore";
@@ -12,7 +12,7 @@ function CollapsibleSection({ title, children }: { title: string; children: Reac
   if (!isMobile) {
     return (
       <div>
-        <h4 className="font-heading font-semibold mb-4 text-base">{title}</h4>
+        <h3 className="font-heading font-semibold mb-4 text-base">{title}</h3>
         {children}
       </div>
     );
@@ -40,14 +40,17 @@ export default function Footer() {
   const settings = useSiteSettingsStore((s) => s.settings);
   const footerBackground = settings.heroImages.footer || bgFooter;
   return (
-    <footer className="relative overflow-hidden text-primary-foreground">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${footerBackground})` }}
+    <footer className="relative z-10 w-full shrink-0 overflow-hidden bg-[#071A2E] text-primary-foreground">
+      <img
+        src={footerBackground}
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
       />
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-navy/88" />
-      <div className="container py-12 md:py-16 relative z-10">
+      <div className="container relative z-10 py-10 md:py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
           {/* Brand */}
           <div>
@@ -65,16 +68,8 @@ export default function Footer() {
             </p>
             <div className="flex items-center gap-3 mt-4">
               <a href="https://www.facebook.com/share/v/1D86G96Zaf/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors">
+                <span className="sr-only">Visit WaterFilterStore on Facebook</span>
                 <Facebook className="h-4 w-4" />
-              </a>
-              <a href="#" className="p-2 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors">
-                <Instagram className="h-4 w-4" />
-              </a>
-              <a href="#" className="p-2 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors">
-                <Twitter className="h-4 w-4" />
-              </a>
-              <a href="#" className="p-2 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors">
-                <Youtube className="h-4 w-4" />
               </a>
             </div>
           </div>
@@ -120,7 +115,7 @@ export default function Footer() {
 
           {/* Contact - always visible */}
           <div>
-            <h4 className="font-heading font-semibold mb-4 text-base">Contact Us</h4>
+            <h3 className="font-heading font-semibold mb-4 text-base">Contact Us</h3>
             <ul className="space-y-3 text-sm opacity-70">
               <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-0.5 shrink-0" />

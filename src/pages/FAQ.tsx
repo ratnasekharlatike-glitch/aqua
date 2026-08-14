@@ -6,6 +6,7 @@ import Layout from "@/components/layout/Layout";
 import bgHero from "@/assets/bg-hero-dark.jpg";
 import { openWhatsAppWithTracking } from "@/lib/whatsapp";
 import { useSiteSettingsStore } from "@/stores/siteSettingsStore";
+import SEO from "@/components/SEO";
 
 const faqCategories = [
   {
@@ -81,6 +82,20 @@ export default function FAQ() {
   const settings = useSiteSettingsStore((s) => s.settings);
   return (
     <Layout>
+      <SEO
+        title="Water Purifier FAQs | Products, Installation & Service"
+        description="Find answers about RO, UV and UF water purifiers, TDS levels, free installation, filter replacement, warranty, maintenance and delivery in Visakhapatnam."
+        keywords="water purifier FAQ, RO purifier installation Visakhapatnam, water purifier service cost, RO filter replacement, purifier warranty, TDS questions"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqCategories.flatMap((category) => category.faqs).map((faq) => ({
+            "@type": "Question",
+            name: faq.q,
+            acceptedAnswer: { "@type": "Answer", text: faq.a },
+          })),
+        }}
+      />
       <section className="relative text-primary-foreground py-10 md:py-14 overflow-hidden">
         <img src={settings.heroImages.faq || bgHero} alt="" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-navy/80" />
