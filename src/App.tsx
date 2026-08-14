@@ -30,7 +30,29 @@ const SolutionsSettings = lazy(() => import("./pages/admin/SolutionsSettings"));
 const Toaster = lazy(() => import("@/components/ui/toaster").then((module) => ({ default: module.Toaster })));
 
 const App = () => {
-  useEffect(() => startProductSync(), []);
+  useEffect(() => {
+    let stopSync = () => undefined;
+    let startTimer: number | undefined;
+
+    const scheduleSync = () => {
+      // Keep Firebase and catalogue hydration out of the hero's critical path.
+      startTimer = window.setTimeout(() => {
+        stopSync = startProductSync();
+      }, 1000);
+    };
+
+    if (document.readyState === "complete") {
+      scheduleSync();
+    } else {
+      window.addEventListener("load", scheduleSync, { once: true });
+    }
+
+    return () => {
+      window.removeEventListener("load", scheduleSync);
+      if (startTimer !== undefined) window.clearTimeout(startTimer);
+      stopSync();
+    };
+  }, []);
 
   return (
     <HelmetProvider>

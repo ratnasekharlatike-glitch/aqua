@@ -1,5 +1,10 @@
-import { persistWhatsAppEnquiry } from "@/lib/enquiries";
 import { useSiteSettingsStore } from "@/stores/siteSettingsStore";
+
+const trackWhatsAppEnquiry = (source: string, message: string) => {
+  void import("@/lib/enquiries")
+    .then(({ persistWhatsAppEnquiry }) => persistWhatsAppEnquiry(source, message))
+    .catch(() => {});
+};
 
 export interface CartItem {
   id: string;
@@ -60,12 +65,12 @@ export const generateProductEnquiry = (productName: string, price: number) => {
 };
 
 export const openWhatsAppWithTracking = (source: string, message: string) => {
-  void persistWhatsAppEnquiry(source, message).catch(() => {});
+  trackWhatsAppEnquiry(source, message);
   window.open(generateWhatsAppLink(message), "_blank", "noopener,noreferrer");
 };
 
 /** Same-window navigation — use after async work so WhatsApp is not blocked as a popup. */
 export const redirectToWhatsAppWithTracking = (source: string, message: string) => {
-  void persistWhatsAppEnquiry(source, message).catch(() => {});
+  trackWhatsAppEnquiry(source, message);
   window.location.assign(generateWhatsAppLink(message));
 };

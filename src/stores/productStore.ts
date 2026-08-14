@@ -1,8 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { products as defaultProducts, Product } from "@/data/products";
-import { collection, doc, onSnapshot, writeBatch } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import { getGoogleShoppingUrl } from "@/lib/productUrls";
 
 interface ProductStore {
@@ -27,6 +25,10 @@ const persistCatalogueMutation = async (
   products: Product[],
   options: { changedId?: string; deletedId?: string },
 ) => {
+  const [{ doc, writeBatch }, { db }] = await Promise.all([
+    import("firebase/firestore"),
+    import("@/lib/firebase"),
+  ]);
   const batch = writeBatch(db);
   batch.set(doc(db, "settings", "catalogStatus"), { initialized: true });
 
@@ -110,31 +112,41 @@ const applyRemoteProducts = () => {
 export function startProductSync() {
   if (productSyncStarted) return () => {};
   productSyncStarted = true;
+  let disposed = false;
+  let unsubscribe = () => {};
 
-  const unsubscribeStatus = onSnapshot(
-    doc(db, "settings", "catalogStatus"),
-    (snapshot) => {
-      catalogInitialized = snapshot.exists() && snapshot.data().initialized === true;
-      applyRemoteProducts();
-    },
-    (error) => console.warn("Could not read catalogue status.", error),
-  );
-
-  const unsubscribeProducts = onSnapshot(
-    collection(db, "products"),
-    (snapshot) => {
-      remoteProductDocumentIds = new Set(snapshot.docs.map((productDocument) => productDocument.id));
-      remoteProducts = snapshot.docs
-        .map((productDocument) => ({ ...productDocument.data(), id: productDocument.id }) as Product)
-        .filter((product) => product.name && product.slug && product.sku);
-      applyRemoteProducts();
-    },
-    (error) => console.warn("Using locally cached products because cloud sync is unavailable.", error),
-  );
+  void Promise.all([import("firebase/firestore"), import("@/lib/firebase")])
+    .then(([{ collection, doc, onSnapshot }, { db }]) => {
+      if (disposed) return;
+      const unsubscribeStatus = onSnapshot(
+        doc(db, "settings", "catalogStatus"),
+        (snapshot) => {
+          catalogInitialized = snapshot.exists() && snapshot.data().initialized === true;
+          applyRemoteProducts();
+        },
+        (error) => console.warn("Could not read catalogue status.", error),
+      );
+      const unsubscribeProducts = onSnapshot(
+        collection(db, "products"),
+        (snapshot) => {
+          remoteProductDocumentIds = new Set(snapshot.docs.map((productDocument) => productDocument.id));
+          remoteProducts = snapshot.docs
+            .map((productDocument) => ({ ...productDocument.data(), id: productDocument.id }) as Product)
+            .filter((product) => product.name && product.slug && product.sku);
+          applyRemoteProducts();
+        },
+        (error) => console.warn("Using locally cached products because cloud sync is unavailable.", error),
+      );
+      unsubscribe = () => {
+        unsubscribeStatus();
+        unsubscribeProducts();
+      };
+    })
+    .catch((error) => console.warn("Using locally cached products because cloud sync is unavailable.", error));
 
   return () => {
-    unsubscribeStatus();
-    unsubscribeProducts();
+    disposed = true;
+    unsubscribe();
     productSyncStarted = false;
   };
 }
