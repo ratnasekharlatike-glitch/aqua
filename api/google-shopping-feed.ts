@@ -1,4 +1,4 @@
-import { products as defaultProducts } from "../src/data/products";
+import { defaultProducts } from "./default-products.js";
 
 const PROJECT_ID = "aqua-water-ac9a8";
 const STORE_ORIGIN = "https://waterfilterstore.in";
