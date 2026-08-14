@@ -89,6 +89,7 @@ export default function Footer() {
                 { label: "Blog", to: "/blog" },
                 { label: "FAQ", to: "/faq" },
                 { label: "Contact", to: "/contact" },
+                { label: "Returns & Refunds", to: "/returns-refunds" },
               ].map((link) => (
                 <li key={link.to}>
                   <Link to={link.to} className="hover:opacity-100 transition-opacity hover:underline">
