@@ -101,13 +101,13 @@ export default function Header() {
         </div>
       </div>
       <div className="border-b border-slate-200 bg-white shadow-[0_8px_24px_-18px_rgba(15,23,42,0.35)]">
-        <div className="container flex h-[72px] items-center justify-between md:h-[78px]">
+        <div className="container flex h-[65px] items-center justify-between md:h-[78px]">
           {/* Logo */}
           <Link to="/" aria-label="WaterFilterStore home" className="group shrink-0">
             <img
               src="/images/water-filter-store-logo.jpeg"
               alt="WaterFilterStore — Get everything about water at one Click"
-              className="h-16 w-[112px] rounded-xl bg-white object-contain px-1 shadow-sm transition-shadow group-hover:shadow-md lg:h-[72px] lg:w-[140px]"
+              className="h-14 w-[100px] rounded-xl bg-white object-contain px-1 shadow-sm transition-shadow group-hover:shadow-md lg:h-[72px] lg:w-[140px]"
               width="140"
               height="72"
               fetchPriority="high"
