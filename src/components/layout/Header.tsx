@@ -105,7 +105,7 @@ export default function Header() {
           {/* Logo */}
           <Link to="/" aria-label="WaterFilterStore home" className="group shrink-0">
             <img
-              src="/images/water-filter-store-logo.png"
+              src="/images/water-filter-store-logo.jpeg"
               alt="WaterFilterStore — Get everything about water at one Click"
               className="h-16 w-[112px] rounded-xl bg-white object-contain px-1 shadow-sm transition-shadow group-hover:shadow-md lg:h-[72px] lg:w-[140px]"
               width="140"
