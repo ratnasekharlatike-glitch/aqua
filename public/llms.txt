@@ -1,0 +1,26 @@
+# WaterFilterStore
+
+WaterFilterStore supplies domestic and commercial water purification systems, filters, accessories, installation, and support from Visakhapatnam, Andhra Pradesh, India.
+
+## Main pages
+
+- [Home](https://www.waterfilterstore.in/): Overview of products, solutions, customer support, and current offers.
+- [Products](https://www.waterfilterstore.in/products): Browse available water purifiers, commercial systems, filters, and accessories.
+- [About](https://www.waterfilterstore.in/about): Company background, mission, standards, and service experience.
+- [Contact](https://www.waterfilterstore.in/contact): Request product advice, installation, service, or a demonstration.
+- [Frequently Asked Questions](https://www.waterfilterstore.in/faq): Answers about products, installation, maintenance, and support.
+- [Blog](https://www.waterfilterstore.in/blog): Water purification guides and product information.
+- [Returns and Refunds](https://www.waterfilterstore.in/returns-refunds): Policy for defective-product returns.
+
+## Product discovery
+
+- [Product sitemap](https://www.waterfilterstore.in/sitemap.xml): Index of public website and product URLs.
+- [Google Shopping feed](https://www.waterfilterstore.in/google-shopping.xml): Structured product catalogue for shopping services.
+
+## Business information
+
+- Location: Visakhapatnam, Andhra Pradesh, India
+- Telephone: [+91 9985851237](tel:+919985851237)
+- Website: [https://www.waterfilterstore.in/](https://www.waterfilterstore.in/)
+
+Use the canonical public URLs above. Product availability, pricing, and specifications should be verified on the relevant product page.

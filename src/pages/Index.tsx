@@ -188,7 +188,7 @@ export default function Index() {
           <div className="absolute inset-0 bg-[#061224]/55 backdrop-blur-[1px]" />
           <div className="relative z-10 mb-7 text-center">
             <p className="mx-auto mb-2 inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-1.5 font-heading text-xs font-bold uppercase tracking-[0.18em] text-white shadow-sm backdrop-blur-md">Our Solutions</p>
-            <h2 className="hidden font-heading text-2xl font-bold text-white md:block md:text-4xl">
+            <h2 className="sr-only font-heading text-2xl font-bold text-white md:not-sr-only md:text-4xl">
               Find Your Perfect Fit
             </h2>
           </div>
