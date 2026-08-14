@@ -2,5 +2,7 @@ import type { User } from "firebase/auth";
 
 export const ADMIN_EMAIL = "ratnasekharlatike@gmail.com";
 
-export const isAuthorizedAdmin = (user: User | null) =>
-  user?.email?.toLowerCase() === ADMIN_EMAIL;
+type AdminIdentity = Pick<User, "email" | "emailVerified">;
+
+export const isAuthorizedAdmin = (user: AdminIdentity | null) =>
+  Boolean(user?.emailVerified && user.email?.toLowerCase() === ADMIN_EMAIL);
