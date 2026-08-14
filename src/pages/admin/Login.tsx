@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { GoogleAuthProvider, onAuthStateChanged, signInWithRedirect, signOut } from "firebase/auth";
+import { getRedirectResult, GoogleAuthProvider, signInWithRedirect, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { isAuthorizedAdmin } from "@/lib/adminAuth";
@@ -8,18 +8,48 @@ import { isAuthorizedAdmin } from "@/lib/adminAuth";
 export default function AdminLogin() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const redirectPath = location.state?.from?.pathname || "/admin";
 
-  useEffect(() => onAuthStateChanged(auth, (user) => {
-    if (isAuthorizedAdmin(user)) navigate(redirectPath, { replace: true });
-    else if (user) {
-      setError("You are not allowed to access this page.");
-      void signOut(auth);
-    }
-  }), [navigate, redirectPath]);
+  useEffect(() => {
+    let active = true;
+
+    const completeGoogleSignIn = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        const user = result?.user || auth.currentUser;
+
+        if (result) {
+          await user.reload();
+          if (isAuthorizedAdmin(user)) {
+            navigate(redirectPath, { replace: true });
+            return;
+          }
+
+          if (active) {
+            setError(user.emailVerified
+              ? "You are not allowed to access this page."
+              : "Your Google email could not be verified. Please use a verified account.");
+          }
+          await signOut(auth);
+        } else if (isAuthorizedAdmin(user)) {
+          navigate(redirectPath, { replace: true });
+        } else if (user) {
+          // Clear a stale non-admin session without showing an access error before Google verification.
+          await signOut(auth);
+        }
+      } catch {
+        if (active) setError("Google sign-in could not be completed. Please try again.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    void completeGoogleSignIn();
+    return () => { active = false; };
+  }, [navigate, redirectPath]);
 
   const handleGoogleSignIn = async () => {
     setError("");
@@ -32,7 +62,7 @@ export default function AdminLogin() {
     } catch (signInError) {
       const code = typeof signInError === "object" && signInError && "code" in signInError ? String(signInError.code) : "";
       if (code.includes("unauthorized-domain")) {
-        setError("You are not allowed to access this page.");
+        setError("Google sign-in is not available on this website address. Please contact the administrator.");
       } else if (code.includes("operation-not-allowed")) {
         setError("Google sign-in is not enabled in Firebase Authentication.");
       } else {
