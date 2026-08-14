@@ -156,7 +156,7 @@ export default function Header() {
               <span className="hidden min-[360px]:inline">Order Now</span>
             </button>
             <button
-              onClick={() => setSearchOpen(!searchOpen)}
+              onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false); }}
               className="flex h-10 w-10 items-center justify-center bg-transparent text-black transition-colors hover:text-slate-600 md:hidden"
               aria-label="Search"
             >
@@ -174,7 +174,7 @@ export default function Header() {
               )}
             </Link>
             <button
-              onClick={() => setMenuOpen(!menuOpen)}
+              onClick={() => { setMenuOpen(!menuOpen); setSearchOpen(false); }}
               className="flex h-10 w-10 items-center justify-center rounded-lg bg-transparent text-black transition-colors hover:bg-slate-100 lg:hidden"
               aria-label="Toggle menu"
             >
@@ -266,14 +266,14 @@ export default function Header() {
 
       {/* Mobile search */}
       {searchOpen && (
-        <form onSubmit={(e) => { e.preventDefault(); handleSearch(mobileSearchQuery); }} className="border-t border-slate-200 bg-white px-4 py-3 md:hidden">
+        <form onSubmit={(e) => { e.preventDefault(); handleSearch(mobileSearchQuery); }} className="absolute left-0 right-0 top-full z-50 border-t border-slate-200 bg-white px-4 py-3 shadow-[0_16px_30px_-18px_rgba(15,23,42,0.45)] animate-in fade-in-0 slide-in-from-top-2 duration-200 md:hidden">
           <div className="flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-2">
             <input
               type="text"
               placeholder="Type to search"
               value={mobileSearchQuery}
               onChange={(e) => setMobileSearchQuery(e.target.value)}
-              className="flex-1 bg-transparent text-sm text-black outline-none placeholder:text-slate-500"
+              className="min-w-0 flex-1 bg-transparent text-base text-black outline-none placeholder:text-slate-500"
               autoFocus
             />
             <button type="submit" aria-label="Search products" className="flex min-h-8 min-w-8 items-center justify-center text-black"><Search className="h-4 w-4" /></button>
