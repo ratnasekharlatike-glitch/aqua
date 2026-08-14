@@ -61,6 +61,20 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (!menuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [menuOpen]);
+
   const handleSearch = (query: string) => {
     if (query.trim()) {
       navigate(`/products?search=${encodeURIComponent(query.trim())}`);
@@ -128,7 +142,7 @@ export default function Header() {
                   className="relative flex items-center gap-1 rounded-lg px-4 py-2 text-[13px] font-medium text-black transition-colors hover:bg-slate-100"
                 >
                   {link.label}
-                  {link.hasDropdown && <ChevronDown className="h-3 w-3 opacity-60" />}
+                  {link.hasDropdown && <ChevronDown className={`h-3 w-3 opacity-60 transition-transform duration-300 ${megaOpen ? "rotate-180" : ""}`} />}
                 </Link>
               </span>
             ))}
@@ -187,14 +201,14 @@ export default function Header() {
       {/* ===== MEGA DROPDOWN ===== */}
       {megaOpen && (
         <div
-          className="hidden lg:block absolute left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-b border-border shadow-2xl animate-fade-in supports-[backdrop-filter]:bg-background/80"
+          className="absolute left-0 right-0 z-50 hidden origin-top animate-in fade-in-0 slide-in-from-top-3 duration-300 lg:block"
           onMouseEnter={openMega}
           onMouseLeave={closeMega}
         >
-          <div className="container py-6">
-            <div className="flex gap-0">
+          <div className="container pt-3">
+            <div className="flex gap-0 overflow-hidden rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-[0_24px_70px_-24px_rgba(15,23,42,0.42)] backdrop-blur-xl">
               {/* Left: category list */}
-              <div className="w-64 border-r border-border pr-4 space-y-0.5">
+              <div className="w-72 space-y-1 border-r border-slate-200 pr-5">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-3">
                   Categories
                 </p>
@@ -204,10 +218,10 @@ export default function Header() {
                     to={`/products?category=${cat.slug}`}
                     onMouseEnter={() => setHoveredCat(cat.slug)}
                     onClick={() => setMegaOpen(false)}
-                    className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    className={`group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-200 ${
                       hoveredCat === cat.slug
-                        ? "bg-primary text-primary-foreground"
-                        : "text-foreground hover:bg-secondary"
+                        ? "translate-x-1 bg-[#0B1E36] text-white shadow-md"
+                        : "text-slate-700 hover:translate-x-1 hover:bg-slate-100"
                     }`}
                   >
                     <span className="flex items-center gap-2">
@@ -230,24 +244,25 @@ export default function Header() {
               </div>
 
               {/* Right: image + description */}
-              <div className="flex-1 pl-8 flex gap-8 items-start">
-                <div className="flex-1">
-                  <h3 className="font-heading font-bold text-lg text-foreground mb-1">
+              <div className="flex flex-1 items-center gap-8 pl-8">
+                <div key={activeCat.slug} className="flex-1 animate-in fade-in-0 slide-in-from-right-3 duration-300">
+                  <span className="mb-3 inline-flex rounded-full bg-cyan-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-700">Water solutions</span>
+                  <h3 className="mb-2 font-heading text-xl font-bold text-slate-950">
                     {activeCat.name}
                   </h3>
-                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                  <p className="mb-5 max-w-lg text-sm leading-relaxed text-slate-600">
                     {activeCat.description}
                   </p>
                   <Link
                     to={`/products?category=${activeCat.slug}`}
                     onClick={() => setMegaOpen(false)}
-                    className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
+                    className="inline-flex items-center gap-2 rounded-full bg-[#FACC15] px-5 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-[#EAB308]"
                   >
                     Explore {activeCat.name}
                     <ChevronRight className="h-4 w-4" />
                   </Link>
                 </div>
-                <div className="w-64 h-48 rounded-xl overflow-hidden bg-secondary shrink-0">
+                <div key={`${activeCat.slug}-image`} className="h-52 w-72 shrink-0 animate-in overflow-hidden rounded-2xl bg-slate-100 fade-in-0 zoom-in-95 duration-300">
                   <img
                     src={categoryImages[activeCat.slug] || megaRo}
                     alt={activeCat.name}
@@ -281,50 +296,66 @@ export default function Header() {
       )}
 
       {/* Mobile menu */}
-      {menuOpen && (
-        <div
-          className="lg:hidden fixed inset-x-0 bottom-0 z-40 bg-background/95 backdrop-blur-sm animate-fade-in overflow-y-auto transition-[top] duration-300"
-          style={{ top: topBarHidden ? 72 : 104 }}
-        >
-          <nav className="container flex flex-col py-4 gap-0.5">
+      <div
+        className={`fixed inset-x-0 bottom-0 z-40 transition-[top] duration-300 lg:hidden ${menuOpen ? "pointer-events-auto visible" : "pointer-events-none invisible"}`}
+        style={{ top: topBarHidden ? 65 : 97 }}
+        aria-hidden={!menuOpen}
+      >
+        <button
+          type="button"
+          aria-label="Close menu"
+          onClick={() => setMenuOpen(false)}
+          className={`absolute inset-0 bg-slate-950/45 backdrop-blur-[2px] transition-opacity duration-300 ${menuOpen ? "opacity-100" : "opacity-0"}`}
+        />
+        <div className={`absolute inset-y-0 right-0 w-[min(92vw,400px)] overflow-y-auto border-l border-white/60 bg-slate-50 shadow-[-24px_0_60px_-28px_rgba(15,23,42,0.65)] transition-transform duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${menuOpen ? "translate-x-0" : "translate-x-full"}`}>
+          <div className="sticky top-0 z-10 flex items-center justify-between bg-[#0B1E36] px-5 py-4 text-white shadow-sm">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-300">Navigation</p>
+              <p className="mt-0.5 font-heading text-lg font-bold">Explore WaterFilterStore</p>
+            </div>
+            <button type="button" onClick={() => setMenuOpen(false)} aria-label="Close navigation" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20 active:scale-95">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <nav className="flex flex-col gap-1 p-4">
             {navLinks.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
                 onClick={() => setMenuOpen(false)}
-                className="flex items-center justify-between px-4 py-3.5 text-base font-medium text-foreground hover:text-accent border-b border-border/50 transition-colors"
+                className="group flex items-center justify-between rounded-xl bg-white px-4 py-3.5 text-[15px] font-bold text-slate-800 shadow-sm ring-1 ring-slate-200/70 transition-all duration-200 hover:-translate-y-0.5 hover:ring-cyan-500/40"
               >
                 {link.label}
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1 group-hover:text-cyan-700" />
               </Link>
             ))}
 
             {/* Categories */}
-            <div className="mt-4 px-4">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            <div className="mt-5">
+              <p className="mb-3 px-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
                 Shop by Category
               </p>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2.5">
                 {categories.map((cat) => (
                   <Link
                     key={cat.slug}
                     to={`/products?category=${cat.slug}`}
                     onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-3 text-sm text-foreground bg-secondary/50 hover:bg-secondary rounded-lg transition-colors"
+                    className="group min-w-0 rounded-xl border border-slate-200 bg-white p-3 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-cyan-500/40 hover:shadow-md"
                   >
-                    <span className="text-base">{cat.icon}</span>
-                    <span className="truncate">{cat.name}</span>
+                    <span className="mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-cyan-50 text-lg transition-transform group-hover:scale-110">{cat.icon}</span>
+                    <span className="block truncate">{cat.name}</span>
                   </Link>
                 ))}
               </div>
             </div>
 
             {/* Actions */}
-            <div className="mt-6 px-4 space-y-3">
+            <div className="mt-6 grid grid-cols-2 gap-2.5 pb-5">
               <Link
                 to="/cart"
                 onClick={() => setMenuOpen(false)}
-                className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-[#0B1E36] text-primary-foreground rounded-lg text-center font-medium hover:bg-[#0B1E36]/90 transition-colors"
+                className="flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#0B1E36] px-3 py-3 text-center text-sm font-bold text-white transition hover:bg-[#142B49] active:scale-[0.98]"
               >
                 <ShoppingCart className="h-4 w-4" />
                 View Cart {totalItems > 0 && `(${totalItems})`}
@@ -332,14 +363,14 @@ export default function Header() {
               <button
                 type="button"
                 onClick={() => openWhatsAppWithTracking("Header Mobile Menu", "Hi! I need help choosing a water purifier.")}
-                className="w-full py-3 px-4 bg-whatsapp text-whatsapp-foreground rounded-lg text-center font-medium"
+                className="min-h-12 rounded-full bg-[#087B55] px-3 py-3 text-center text-sm font-bold text-white shadow-sm transition hover:bg-[#066848] active:scale-[0.98]"
               >
-                WhatsApp Us - {settings.phone}
+                WhatsApp Us
               </button>
             </div>
           </nav>
         </div>
-      )}
+      </div>
     </header>
   );
 }
