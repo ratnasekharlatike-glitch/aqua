@@ -14,12 +14,13 @@ import Layout from "@/components/layout/Layout";
 import SEO from "@/components/SEO";
 import { useSiteSettingsStore } from "@/stores/siteSettingsStore";
 import { openWhatsAppWithTracking } from "@/lib/whatsapp";
+import heroSlide1 from "@/assets/hero-slide-1.jpg";
 import productRange from "@/assets/product-range.jpg";
 import bgCta from "@/assets/bg-cta.jpg";
 
 const heroSlide = {
-  image: "/images/home-hero-industrial-1920.webp",
-  mobileImage: "/images/home-hero-industrial-800.webp",
+  image: heroSlide1,
+  mobileImage: heroSlide1,
   title: "Advanced Water Purification",
   subtitle: "RO + UV + UF Technology",
   cta: "Explore Products",
