@@ -9,7 +9,7 @@ import SEO from "@/components/SEO";
 import { toast } from "@/hooks/use-toast";
 import bgHero from "@/assets/bg-hero-dark.jpg";
 import { useSiteSettingsStore } from "@/stores/siteSettingsStore";
-import { persistContactEnquiry } from "@/lib/enquiries";
+import { FORMSPREE_CONTACT_ENDPOINT, persistContactEnquiry, submitContactToFormspree } from "@/lib/enquiries";
 
 export default function Contact() {
   const settings = useSiteSettingsStore((s) => s.settings);
@@ -20,7 +20,10 @@ export default function Contact() {
     e.preventDefault();
     setSending(true);
     try {
-      await persistContactEnquiry(form);
+      await submitContactToFormspree(form);
+      void persistContactEnquiry(form).catch(() => {
+        // Formspree delivery succeeded; Firebase is a secondary admin-panel copy.
+      });
       toast({ title: "Message sent", description: "We'll get back to you within 24 hours." });
       setForm({ name: "", email: "", phone: "", subject: "", message: "" });
     } catch {
@@ -36,7 +39,7 @@ export default function Contact() {
 
   return (
     <Layout>
-      <SEO title="Contact Us" description="Get in touch with WaterFilterStore. We offer 24/7 customer support and free consultation for your water purification needs." />
+      <SEO title="Contact WaterFilterStore in Visakhapatnam" description="Contact WaterFilterStore in Gajuwaka, Visakhapatnam for water purifier sales, free consultation, installation, repairs and RO service support. Call or WhatsApp +91 9985851237." keywords="water purifier shop Visakhapatnam contact, RO service Gajuwaka, water purifier installation Visakhapatnam, WaterFilterStore phone number, RO repair near me" />
       <div className="relative text-primary-foreground py-10 md:py-14 overflow-hidden">
         <img src={settings.heroImages.contact || bgHero} alt="" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-navy/80" />
@@ -55,30 +58,30 @@ export default function Contact() {
             {/* Form */}
             <div>
               <h2 className="font-heading font-bold text-2xl text-foreground mb-6">Send us a Message</h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form action={FORMSPREE_CONTACT_ENDPOINT} method="POST" onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1 block">Name *</label>
-                    <Input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Your name" />
+                    <Input required name="name" autoComplete="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Your name" />
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1 block">Email *</label>
-                    <Input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="your@email.com" />
+                    <Input required name="email" autoComplete="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="your@email.com" />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1 block">Phone</label>
-                    <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+91 9876543210" />
+                    <Input name="phone" autoComplete="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+91 9876543210" />
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1 block">Subject *</label>
-                    <Input required value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="How can we help?" />
+                    <Input required name="subject" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="How can we help?" />
                   </div>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1 block">Message *</label>
-                  <Textarea required rows={5} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="Tell us more..." />
+                  <Textarea required name="message" rows={5} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="Tell us more..." />
                 </div>
                 <Button type="submit" size="lg" disabled={sending} className="font-heading font-semibold">
                   <Send className="h-4 w-4 mr-2" /> {sending ? "Sending..." : "Send Message"}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { PlusCircle, Pencil, Trash2, Search } from "lucide-react";
+import { Check, Pencil, PlusCircle, Search, Trash2 } from "lucide-react";
 import { useProductStore } from "@/stores/productStore";
 import { categories } from "@/data/categories";
 import { Button } from "@/components/ui/button";
@@ -27,8 +27,9 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 export default function ProductsList() {
-  const { products, deleteProduct } = useProductStore();
+  const { products, deleteProduct, updateProduct } = useProductStore();
   const [search, setSearch] = useState("");
+  const [priceDrafts, setPriceDrafts] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
   const filtered = search
@@ -42,9 +43,31 @@ export default function ProductsList() {
   const getCategoryName = (slug: string) =>
     categories.find((c) => c.slug === slug)?.name || slug;
 
-  const handleDelete = (id: string, name: string) => {
-    deleteProduct(id);
-    toast({ title: "Product deleted", description: `"${name}" has been removed.` });
+  const handleDelete = async (id: string, name: string) => {
+    try {
+      await deleteProduct(id);
+      toast({ title: "Product permanently deleted", description: `"${name}" has been removed from the database and website.` });
+    } catch {
+      toast({ title: "Delete failed", description: `"${name}" was not removed. Please check your connection and try again.`, variant: "destructive" });
+    }
+  };
+
+  const savePrice = (id: string) => {
+    const product = products.find((item) => item.id === id);
+    const selling = Number(priceDrafts[id]);
+    if (!product || !Number.isFinite(selling) || selling <= 0) {
+      toast({ title: "Invalid price", description: "Enter a valid selling price greater than zero.", variant: "destructive" });
+      return;
+    }
+    const original = Math.max(product.price.original, selling);
+    const discount = original > 0 ? Math.max(0, Math.round(((original - selling) / original) * 100)) : 0;
+    updateProduct(id, { price: { ...product.price, selling, original, discount } });
+    setPriceDrafts((current) => {
+      const next = { ...current };
+      delete next[id];
+      return next;
+    });
+    toast({ title: "Price updated", description: `${product.name} is now ₹${selling.toLocaleString("en-IN")}.` });
   };
 
   return (
@@ -96,7 +119,30 @@ export default function ProductsList() {
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{product.sku}</TableCell>
                 <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">{getCategoryName(product.category)}</TableCell>
-                <TableCell className="text-sm font-medium text-foreground">₹{product.price.selling.toLocaleString("en-IN")}</TableCell>
+                <TableCell>
+                  <div className="flex min-w-[130px] items-center gap-1.5">
+                    <span className="text-sm font-semibold text-foreground">₹</span>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={priceDrafts[product.id] ?? String(product.price.selling)}
+                      onChange={(event) => setPriceDrafts((current) => ({ ...current, [product.id]: event.target.value }))}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          savePrice(product.id);
+                        }
+                      }}
+                      className="h-8 w-24 px-2 text-sm font-medium"
+                      aria-label={`Selling price for ${product.name}`}
+                    />
+                    {priceDrafts[product.id] !== undefined && Number(priceDrafts[product.id]) !== product.price.selling && (
+                      <Button type="button" variant="ghost" size="icon" onClick={() => savePrice(product.id)} className="h-8 w-8 shrink-0 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700" aria-label={`Save price for ${product.name}`}>
+                        <Check className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell className="hidden sm:table-cell">
                   <span className={`text-xs px-2 py-0.5 rounded font-medium ${
                     product.stock === "in_stock" ? "bg-whatsapp/10 text-whatsapp" : product.stock === "low_stock" ? "bg-accent/10 text-accent" : "bg-destructive/10 text-destructive"

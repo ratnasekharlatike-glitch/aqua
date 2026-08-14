@@ -4,12 +4,14 @@ import Layout from "@/components/layout/Layout";
 import bgHero from "@/assets/bg-hero-dark.jpg";
 import { useBlogStore } from "@/stores/blogStore";
 import { useSiteSettingsStore } from "@/stores/siteSettingsStore";
+import SEO from "@/components/SEO";
 
 export default function Blog() {
   const posts = useBlogStore((s) => s.posts);
   const settings = useSiteSettingsStore((s) => s.settings);
   return (
     <Layout>
+      <SEO title="Water Purifier Guides & Water Quality Tips" description="Read expert guides on choosing RO, UV and UF purifiers, understanding TDS, maintaining water filters and improving drinking water quality in Visakhapatnam." keywords="water purifier guide, RO vs UV vs UF, TDS water guide, water purifier maintenance, drinking water tips, WaterFilterStore blog" />
       <section className="relative text-primary-foreground py-10 md:py-14 overflow-hidden">
         <img src={settings.heroImages.blog || bgHero} alt="" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-navy/80" />

@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, ShoppingCart, Search, ChevronDown, ChevronRight, User } from "lucide-react";
+import { Menu, X, ShoppingCart, Search, ChevronDown, ChevronRight, User, MapPin, Phone } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
 import { categories } from "@/data/categories";
 import { useSiteSettingsStore } from "@/stores/siteSettingsStore";
@@ -40,7 +40,26 @@ export default function Header() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
+  const [topBarHidden, setTopBarHidden] = useState(false);
   const settings = useSiteSettingsStore((s) => s.settings);
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY <= 24) {
+        setTopBarHidden(false);
+      } else if (currentScrollY > lastScrollY + 4) {
+        setTopBarHidden(true);
+      } else if (currentScrollY < lastScrollY - 4) {
+        setTopBarHidden(false);
+      }
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
@@ -62,22 +81,37 @@ export default function Header() {
   const activeCat = categories.find((c) => c.slug === hoveredCat) || categories[0];
 
   return (
-    <header className="sticky top-0 z-50">
-      <div className="bg-[#0B1E36]/95 backdrop-blur-xl border-b border-white/5 shadow-sm supports-[backdrop-filter]:bg-[#0B1E36]/90">
-        <div className="container flex items-center justify-between h-16 md:h-[68px]">
+    <header className="sticky top-0 z-50 w-full">
+      <div className={`overflow-hidden bg-[#F97316] text-[#0B1F3A] transition-[max-height,opacity] duration-300 ease-out ${topBarHidden ? "max-h-0 opacity-0" : "max-h-9 opacity-100"}`}>
+        <div className="container flex h-8 items-center justify-between gap-3 text-[10px] font-medium sm:text-xs">
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.address)}`}
+            target="_blank"
+            rel="noreferrer"
+            className="flex min-w-0 items-center gap-1.5 transition hover:text-black"
+          >
+            <MapPin className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate sm:hidden">Visakhapatnam, Andhra Pradesh</span>
+            <span className="hidden truncate sm:inline">{settings.address}</span>
+          </a>
+          <a href={`tel:${settings.phone.replace(/\s/g, "")}`} className="flex shrink-0 items-center gap-1.5 font-semibold transition hover:text-black">
+            <Phone className="h-3.5 w-3.5" />
+            <span>{settings.phone}</span>
+          </a>
+        </div>
+      </div>
+      <div className="border-b border-slate-200 bg-white shadow-[0_8px_24px_-18px_rgba(15,23,42,0.35)]">
+        <div className="container flex h-[72px] items-center justify-between md:h-[78px]">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
-            <div className="h-10 w-10 rounded-xl bg-background flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-              <span className="text-navy font-heading font-bold text-lg">A</span>
-            </div>
-            <div className="hidden sm:block">
-              <p className="font-heading font-bold text-primary-foreground text-[15px] leading-tight tracking-tight">
-                WaterFilterStore
-              </p>
-              <p className="text-[10px] text-primary-foreground/50 leading-tight tracking-wide uppercase">
-                Water Technologies
-              </p>
-            </div>
+          <Link to="/" aria-label="WaterFilterStore home" className="group shrink-0">
+            <img
+              src="/images/water-filter-store-logo.png"
+              alt="WaterFilterStore — Get everything about water at one Click"
+              className="h-16 w-[112px] rounded-xl bg-white object-contain px-1 shadow-sm transition-shadow group-hover:shadow-md lg:h-[72px] lg:w-[140px]"
+              width="140"
+              height="72"
+              fetchPriority="high"
+            />
           </Link>
 
           {/* Desktop nav */}
@@ -91,7 +125,7 @@ export default function Header() {
               >
                 <Link
                   to={link.to}
-                  className="relative px-4 py-2 text-[13px] font-medium text-primary-foreground/75 hover:text-primary-foreground transition-colors flex items-center gap-1 rounded-lg hover:bg-primary-foreground/5"
+                  className="relative flex items-center gap-1 rounded-lg px-4 py-2 text-[13px] font-medium text-black transition-colors hover:bg-slate-100"
                 >
                   {link.label}
                   {link.hasDropdown && <ChevronDown className="h-3 w-3 opacity-60" />}
@@ -101,28 +135,37 @@ export default function Header() {
           </nav>
 
           {/* Right side */}
-          <div className="flex items-center gap-0.5">
-            <form onSubmit={(e) => { e.preventDefault(); handleSearch(searchQuery); }} className="hidden md:flex items-center bg-primary-foreground/8 rounded-xl px-3.5 py-2 border border-primary-foreground/10 focus-within:border-primary-foreground/25 transition-colors">
+          <div className="flex items-center gap-1">
+            <form onSubmit={(e) => { e.preventDefault(); handleSearch(searchQuery); }} className="hidden items-center rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 transition-colors focus-within:border-slate-400 md:flex">
               <input
                 type="text"
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-transparent text-primary-foreground placeholder:text-primary-foreground/40 text-sm w-32 lg:w-40 outline-none"
+                className="w-32 bg-transparent text-sm text-black outline-none placeholder:text-slate-500 lg:w-40"
               />
-              <button type="submit"><Search className="h-4 w-4 text-primary-foreground/40" /></button>
+              <button type="submit" aria-label="Search products" className="-mr-2 flex min-h-6 min-w-6 items-center justify-center text-black"><Search className="h-4 w-4" /></button>
             </form>
             <button
+              type="button"
+              onClick={() => openWhatsAppWithTracking("Mobile Header CTA", "Hi! I want to order a water purifier. Please help me choose the right model.")}
+              className="mr-0.5 inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-[#34D399]/30 bg-[#087B55] px-3.5 text-xs font-bold text-white shadow-[0_6px_16px_-8px_rgba(16,185,129,0.9)] transition-all hover:bg-[#066848] active:scale-[0.98] md:hidden"
+              aria-label="Order on WhatsApp"
+            >
+              <img src="/images/whatsapp-logo.svg" alt="" aria-hidden="true" className="h-[18px] w-[18px] shrink-0 brightness-0 invert" />
+              <span className="hidden min-[360px]:inline">Order Now</span>
+            </button>
+            <button
               onClick={() => setSearchOpen(!searchOpen)}
-              className="md:hidden p-2.5 text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/5 rounded-lg transition-colors"
+              className="flex h-10 w-10 items-center justify-center bg-transparent text-black transition-colors hover:text-slate-600 md:hidden"
               aria-label="Search"
             >
               <Search className="h-5 w-5" />
             </button>
-            <Link to="/admin" className="p-2.5 text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/5 rounded-lg transition-colors">
+            <Link to="/admin" aria-label="Admin account" className="hidden rounded-lg p-2.5 text-black transition-colors hover:bg-slate-100 md:block">
               <User className="h-5 w-5" />
             </Link>
-            <Link to="/cart" className="relative p-2.5 text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/5 rounded-lg transition-colors">
+            <Link to="/cart" aria-label={`Shopping cart${totalItems > 0 ? `, ${totalItems} items` : ""}`} className="relative hidden rounded-lg p-2.5 text-black transition-colors hover:bg-slate-100 md:block">
               <ShoppingCart className="h-5 w-5" />
               {totalItems > 0 && (
                 <span className="absolute top-0.5 right-0.5 rounded-full bg-accent text-accent-foreground text-[10px] font-bold flex items-center justify-center min-w-[18px] h-[18px] shadow-sm">
@@ -132,7 +175,7 @@ export default function Header() {
             </Link>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="lg:hidden p-2.5 text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/5 rounded-lg transition-colors"
+              className="flex h-10 w-10 items-center justify-center rounded-lg bg-transparent text-black transition-colors hover:bg-slate-100 lg:hidden"
               aria-label="Toggle menu"
             >
               {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -222,24 +265,27 @@ export default function Header() {
 
       {/* Mobile search */}
       {searchOpen && (
-        <form onSubmit={(e) => { e.preventDefault(); handleSearch(mobileSearchQuery); }} className="md:hidden bg-[#0B1E36] border-t border-primary-foreground/10 px-4 py-3">
-          <div className="flex items-center bg-primary-foreground/10 rounded-full px-3 py-2 border border-primary-foreground/20">
+        <form onSubmit={(e) => { e.preventDefault(); handleSearch(mobileSearchQuery); }} className="border-t border-slate-200 bg-white px-4 py-3 md:hidden">
+          <div className="flex items-center rounded-full border border-slate-300 bg-slate-50 px-3 py-2">
             <input
               type="text"
               placeholder="Type to search"
               value={mobileSearchQuery}
               onChange={(e) => setMobileSearchQuery(e.target.value)}
-              className="bg-transparent text-primary-foreground placeholder:text-primary-foreground/50 text-sm flex-1 outline-none"
+              className="flex-1 bg-transparent text-sm text-black outline-none placeholder:text-slate-500"
               autoFocus
             />
-            <button type="submit"><Search className="h-4 w-4 text-primary-foreground/60" /></button>
+            <button type="submit" aria-label="Search products" className="flex min-h-8 min-w-8 items-center justify-center text-black"><Search className="h-4 w-4" /></button>
           </div>
         </form>
       )}
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="lg:hidden fixed inset-0 top-14 z-40 bg-background/95 backdrop-blur-sm animate-fade-in overflow-y-auto">
+        <div
+          className="lg:hidden fixed inset-x-0 bottom-0 z-40 bg-background/95 backdrop-blur-sm animate-fade-in overflow-y-auto transition-[top] duration-300"
+          style={{ top: topBarHidden ? 72 : 104 }}
+        >
           <nav className="container flex flex-col py-4 gap-0.5">
             {navLinks.map((link) => (
               <Link

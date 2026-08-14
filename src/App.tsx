@@ -1,41 +1,41 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { lazy, Suspense, useEffect } from "react";
 import ScrollToTop from "@/components/ScrollToTop";
+import { startProductSync } from "@/stores/productStore";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
-import Products from "./pages/Products";
-import ProductDetail from "./pages/ProductDetail";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import Cart from "./pages/Cart";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
-import FAQ from "./pages/FAQ";
-import NotFound from "./pages/NotFound";
-import AdminLayout from "./components/admin/AdminLayout";
-import RequireAdminAuth from "./components/admin/RequireAdminAuth";
-import AdminDashboard from "./pages/admin/Dashboard";
-import ProductsList from "./pages/admin/ProductsList";
-import ProductForm from "./pages/admin/ProductForm";
-import OrdersPlaceholder from "./pages/admin/OrdersPlaceholder";
-import CustomersPlaceholder from "./pages/admin/CustomersPlaceholder";
-import SettingsPlaceholder from "./pages/admin/SettingsPlaceholder";
-import AdminLogin from "./pages/admin/Login";
-import BlogsManager from "./pages/admin/BlogsManager";
-import HeroSettings from "./pages/admin/HeroSettings";
-import StatsSettings from "./pages/admin/StatsSettings";
-import SolutionsSettings from "./pages/admin/SolutionsSettings";
+const Products = lazy(() => import("./pages/Products"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const About = lazy(() => import("./pages/About"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Cart = lazy(() => import("./pages/Cart"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
+const FAQ = lazy(() => import("./pages/FAQ"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const AdminLayout = lazy(() => import("./components/admin/AdminLayout"));
+const RequireAdminAuth = lazy(() => import("./components/admin/RequireAdminAuth"));
+const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
+const ProductsList = lazy(() => import("./pages/admin/ProductsList"));
+const ProductForm = lazy(() => import("./pages/admin/ProductForm"));
+const OrdersPlaceholder = lazy(() => import("./pages/admin/OrdersPlaceholder"));
+const CustomersPlaceholder = lazy(() => import("./pages/admin/CustomersPlaceholder"));
+const SettingsPlaceholder = lazy(() => import("./pages/admin/SettingsPlaceholder"));
+const AdminLogin = lazy(() => import("./pages/admin/Login"));
+const BlogsManager = lazy(() => import("./pages/admin/BlogsManager"));
+const HeroSettings = lazy(() => import("./pages/admin/HeroSettings"));
+const StatsSettings = lazy(() => import("./pages/admin/StatsSettings"));
+const SolutionsSettings = lazy(() => import("./pages/admin/SolutionsSettings"));
+const Toaster = lazy(() => import("@/components/ui/toaster").then((module) => ({ default: module.Toaster })));
 
-const queryClient = new QueryClient();
+const App = () => {
+  useEffect(() => startProductSync(), []);
 
-const App = () => (
-  <HelmetProvider>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <BrowserRouter>
+  return (
+    <HelmetProvider>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <Suspense fallback={<div className="min-h-screen bg-background" aria-label="Loading page" />}>
+          <Toaster />
           <ScrollToTop />
           <Routes>
             <Route path="/" element={<Index />} />
@@ -68,10 +68,10 @@ const App = () => (
 
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </HelmetProvider>
-);
+      </Suspense>
+    </BrowserRouter>
+    </HelmetProvider>
+  );
+};
 
 export default App;
