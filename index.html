@@ -18,9 +18,9 @@
         const heroPreload = document.createElement("link");
         heroPreload.rel = "preload";
         heroPreload.as = "image";
-        heroPreload.href = "/images/hero-slide-primary-1920.webp";
-        heroPreload.imageSrcset = "/images/hero-slide-primary-800.webp 800w, /images/hero-slide-primary-1920.webp 1920w";
-        heroPreload.imageSizes = "100vw";
+        heroPreload.href = window.matchMedia("(max-width: 767px)").matches
+          ? "/images/hero-slide-primary-800.webp"
+          : "/images/hero-slide-primary-1920.webp";
         heroPreload.fetchPriority = "high";
         document.head.appendChild(heroPreload);
       }
