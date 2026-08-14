@@ -12,6 +12,7 @@ const Cart = lazy(() => import("./pages/Cart"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const FAQ = lazy(() => import("./pages/FAQ"));
+const ReturnsRefunds = lazy(() => import("./pages/ReturnsRefunds"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminLayout = lazy(() => import("./components/admin/AdminLayout"));
 const RequireAdminAuth = lazy(() => import("./components/admin/RequireAdminAuth"));
@@ -47,6 +48,7 @@ const App = () => {
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/faq" element={<FAQ />} />
+            <Route path="/returns-refunds" element={<ReturnsRefunds />} />
 
             {/* Admin Routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
