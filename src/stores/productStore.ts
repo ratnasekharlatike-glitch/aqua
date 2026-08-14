@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import { products as defaultProducts, Product } from "@/data/products";
 import { collection, doc, onSnapshot, writeBatch } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { getGoogleShoppingUrl } from "@/lib/productUrls";
 
 interface ProductStore {
   products: Product[];
@@ -15,7 +16,9 @@ interface ProductStore {
 }
 
 const sortBySku = (items: Product[]) =>
-  [...items].sort((a, b) => a.sku.localeCompare(b.sku, undefined, { numeric: true }));
+  items
+    .map((product) => ({ ...product, shoppingUrl: getGoogleShoppingUrl(product.slug) }))
+    .sort((a, b) => a.sku.localeCompare(b.sku, undefined, { numeric: true }));
 
 let catalogInitialized = false;
 let remoteProductDocumentIds = new Set<string>();
@@ -49,7 +52,11 @@ export const useProductStore = create<ProductStore>()(
       products: sortBySku(defaultProducts),
       addProduct: (product) =>
         set((state) => {
-          const savedProduct = { ...product, id: crypto.randomUUID() };
+          const savedProduct = {
+            ...product,
+            id: crypto.randomUUID(),
+            shoppingUrl: getGoogleShoppingUrl(product.slug),
+          };
           const products = sortBySku([...state.products, savedProduct]);
           void persistCatalogueMutation(products, { changedId: savedProduct.id }).catch((error) => {
             console.warn("Product saved locally, but cloud sync failed.", error);
@@ -58,7 +65,11 @@ export const useProductStore = create<ProductStore>()(
         }),
       updateProduct: (id, data) =>
         set((state) => {
-          const products = sortBySku(state.products.map((product) => product.id === id ? { ...product, ...data } : product));
+          const products = sortBySku(state.products.map((product) => {
+            if (product.id !== id) return product;
+            const updatedProduct = { ...product, ...data };
+            return { ...updatedProduct, shoppingUrl: getGoogleShoppingUrl(updatedProduct.slug) };
+          }));
           const savedProduct = products.find((product) => product.id === id);
           if (savedProduct) {
             void persistCatalogueMutation(products, { changedId: id }).catch((error) => {

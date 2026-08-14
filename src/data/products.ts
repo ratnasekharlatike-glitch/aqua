@@ -2,6 +2,8 @@ export interface Product {
   id: string;
   name: string;
   slug: string;
+  /** Stable landing-page URL submitted to Google Merchant Center. */
+  shoppingUrl?: string;
   sku: string;
   category: string;
   description: string;

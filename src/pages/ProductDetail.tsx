@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import Layout from "@/components/layout/Layout";
 import SEO from "@/components/SEO";
 import { openWhatsAppWithTracking } from "@/lib/whatsapp";
+import { getGoogleShoppingUrl } from "@/lib/productUrls";
 
 const fallbackProductImage = "/images/premium-ro-purifier.png";
 
@@ -53,7 +54,7 @@ export default function ProductDetail() {
   );
 
   const tabs = ["Overview", "Specifications", "Installation & Warranty", `Reviews (${product.reviewCount})`];
-  const productUrl = `https://waterfilterstore.in/products/${product.slug}`;
+  const productUrl = product.shoppingUrl || getGoogleShoppingUrl(product.slug);
   const productStructuredData = {
     "@context": "https://schema.org",
     "@type": "Product",

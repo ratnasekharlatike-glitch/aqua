@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, GripVertical, ImagePlus, Plus, Save, Star, Trash2, X } from "lucide-react";
+import { ArrowLeft, ExternalLink, GripVertical, ImagePlus, Plus, Save, Star, Trash2, X } from "lucide-react";
 import { useProductStore } from "@/stores/productStore";
 import { categories } from "@/data/categories";
 import type { Product } from "@/data/products";
@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { moveImage, optimizeProductImage } from "@/lib/productImages";
+import { getGoogleShoppingUrl } from "@/lib/productUrls";
 
 const emptyProduct = {
   name: "",
@@ -54,6 +55,7 @@ export default function ProductForm() {
   const [imageError, setImageError] = useState("");
   const [isProcessingImages, setIsProcessingImages] = useState(false);
   const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(null);
+  const googleShoppingUrl = form.slug ? getGoogleShoppingUrl(form.slug) : "Created automatically from the product name";
 
   useEffect(() => {
     if (isEdit && id) {
@@ -337,6 +339,20 @@ export default function ProductForm() {
                   The product will automatically appear under this category on the Products page.
                 </p>
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="shopping-url">Google Shopping URL</Label>
+              <div className="flex gap-2">
+                <Input id="shopping-url" value={googleShoppingUrl} readOnly className="bg-muted/40" />
+                {form.slug && (
+                  <Button type="button" variant="outline" size="icon" asChild title="Open product landing page">
+                    <a href={googleShoppingUrl} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" /></a>
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Generated automatically and refreshed whenever the product URL slug changes.
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
