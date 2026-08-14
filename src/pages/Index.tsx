@@ -14,13 +14,12 @@ import Layout from "@/components/layout/Layout";
 import SEO from "@/components/SEO";
 import { useSiteSettingsStore } from "@/stores/siteSettingsStore";
 import { openWhatsAppWithTracking } from "@/lib/whatsapp";
-import heroSlide1 from "@/assets/hero-slide-1.jpg";
 import productRange from "@/assets/product-range.jpg";
 import bgCta from "@/assets/bg-cta.jpg";
 
 const heroSlide = {
-  image: heroSlide1,
-  mobileImage: heroSlide1,
+  image: "/images/hero-slide-primary-1920.webp",
+  mobileImage: "/images/hero-slide-primary-800.webp",
   title: "Advanced Water Purification",
   subtitle: "RO + UV + UF Technology",
   cta: "Explore Products",
@@ -132,6 +131,7 @@ export default function Index() {
             className="h-full w-full object-cover object-center"
             loading="eager"
             decoding="async"
+            fetchPriority="high"
           />
         </picture>
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/35 to-slate-950/10 md:bg-gradient-to-t md:from-foreground/80 md:via-foreground/35 md:to-foreground/10" />

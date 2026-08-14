@@ -26,7 +26,7 @@ const escapeXml = (value) => String(value ?? "")
 
 const absoluteImageUrl = (image, productId) => {
   if (typeof image !== "string" || !image || image === "/placeholder.svg" || image.startsWith("/src/")) {
-    return `${STORE_ORIGIN}/images/premium-ro-purifier.png`;
+    return `${STORE_ORIGIN}/images/premium-ro-purifier.webp`;
   }
   if (image.startsWith("data:image/")) return `${STORE_ORIGIN}/api/product-image?id=${encodeURIComponent(productId)}`;
   if (image.startsWith("https://") || image.startsWith("http://")) return image;
