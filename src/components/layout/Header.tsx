@@ -304,12 +304,8 @@ export default function Header() {
               ))}
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <Link to="/cart" onClick={() => setMenuOpen(false)} className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#0B1E36] px-3 text-sm font-bold text-white transition hover:bg-[#142B49]">
-                <ShoppingCart className="h-4 w-4" />
-                Cart {totalItems > 0 && `(${totalItems})`}
-              </Link>
-              <button type="button" onClick={() => { setMenuOpen(false); openWhatsAppWithTracking("Header Mobile Menu", "Hi! I need help choosing a water purifier."); }} className="min-h-11 rounded-lg bg-[#087B55] px-3 text-sm font-bold text-white transition hover:bg-[#066848]">
+            <div className="mt-4">
+              <button type="button" onClick={() => { setMenuOpen(false); openWhatsAppWithTracking("Header Mobile Menu", "Hi! I need help choosing a water purifier."); }} className="min-h-11 w-full rounded-lg bg-[#087B55] px-3 text-sm font-bold text-white transition hover:bg-[#066848]">
                 WhatsApp
               </button>
             </div>
