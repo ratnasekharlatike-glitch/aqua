@@ -53,6 +53,7 @@
   ],
   "rewrites": [
     { "source": "/google-shopping.xml", "destination": "/api/google-shopping-feed" },
+    { "source": "/product-sitemap.xml", "destination": "/api/product-sitemap" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

@@ -7,3 +7,4 @@ Disallow: /cart
 Host: waterfilterstore.in
 
 Sitemap: https://waterfilterstore.in/sitemap.xml
+Sitemap: https://waterfilterstore.in/product-sitemap.xml
