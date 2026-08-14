@@ -61,20 +61,6 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    if (!menuOpen) return;
-    const previousOverflow = document.body.style.overflow;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
-    };
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [menuOpen]);
-
   const handleSearch = (query: string) => {
     if (query.trim()) {
       navigate(`/products?search=${encodeURIComponent(query.trim())}`);
@@ -295,82 +281,41 @@ export default function Header() {
         </form>
       )}
 
-      {/* Mobile menu */}
-      <div
-        className={`fixed inset-x-0 bottom-0 z-40 transition-[top] duration-300 lg:hidden ${menuOpen ? "pointer-events-auto visible" : "pointer-events-none invisible"}`}
-        style={{ top: topBarHidden ? 65 : 97 }}
-        aria-hidden={!menuOpen}
-      >
-        <button
-          type="button"
-          aria-label="Close menu"
-          onClick={() => setMenuOpen(false)}
-          className={`absolute inset-0 bg-slate-950/45 backdrop-blur-[2px] transition-opacity duration-300 ${menuOpen ? "opacity-100" : "opacity-0"}`}
-        />
-        <div className={`absolute inset-y-0 right-0 w-[min(92vw,400px)] overflow-y-auto border-l border-white/60 bg-slate-50 shadow-[-24px_0_60px_-28px_rgba(15,23,42,0.65)] transition-transform duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${menuOpen ? "translate-x-0" : "translate-x-full"}`}>
-          <div className="sticky top-0 z-10 flex items-center justify-between bg-[#0B1E36] px-5 py-4 text-white shadow-sm">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-300">Navigation</p>
-              <p className="mt-0.5 font-heading text-lg font-bold">Explore WaterFilterStore</p>
-            </div>
-            <button type="button" onClick={() => setMenuOpen(false)} aria-label="Close navigation" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20 active:scale-95">
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-          <nav className="flex flex-col gap-1 p-4">
-            {navLinks.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                onClick={() => setMenuOpen(false)}
-                className="group flex items-center justify-between rounded-xl bg-white px-4 py-3.5 text-[15px] font-bold text-slate-800 shadow-sm ring-1 ring-slate-200/70 transition-all duration-200 hover:-translate-y-0.5 hover:ring-cyan-500/40"
-              >
-                {link.label}
-                <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1 group-hover:text-cyan-700" />
-              </Link>
-            ))}
-
-            {/* Categories */}
-            <div className="mt-5">
-              <p className="mb-3 px-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
-                Shop by Category
-              </p>
-              <div className="grid grid-cols-2 gap-2.5">
-                {categories.map((cat) => (
-                  <Link
-                    key={cat.slug}
-                    to={`/products?category=${cat.slug}`}
-                    onClick={() => setMenuOpen(false)}
-                    className="group min-w-0 rounded-xl border border-slate-200 bg-white p-3 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-cyan-500/40 hover:shadow-md"
-                  >
-                    <span className="mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-cyan-50 text-lg transition-transform group-hover:scale-110">{cat.icon}</span>
-                    <span className="block truncate">{cat.name}</span>
-                  </Link>
-                ))}
-              </div>
+      {/* Traditional mobile dropdown */}
+      {menuOpen && (
+        <div className="border-t border-slate-200 bg-white shadow-[0_18px_32px_-20px_rgba(15,23,42,0.45)] animate-in fade-in-0 slide-in-from-top-2 duration-200 lg:hidden">
+          <nav className="container max-h-[calc(100vh-97px)] overflow-y-auto py-3">
+            <div className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">
+              {navLinks.map((link) => (
+                <Link key={link.to} to={link.to} onClick={() => setMenuOpen(false)} className="flex min-h-12 items-center justify-between px-4 py-3 text-sm font-semibold text-slate-800 transition-colors hover:bg-slate-50 hover:text-cyan-700">
+                  {link.label}
+                  <ChevronRight className="h-4 w-4 text-slate-400" />
+                </Link>
+              ))}
             </div>
 
-            {/* Actions */}
-            <div className="mt-6 grid grid-cols-2 gap-2.5 pb-5">
-              <Link
-                to="/cart"
-                onClick={() => setMenuOpen(false)}
-                className="flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#0B1E36] px-3 py-3 text-center text-sm font-bold text-white transition hover:bg-[#142B49] active:scale-[0.98]"
-              >
+            <p className="mb-2 mt-4 px-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">Shop by Category</p>
+            <div className="grid grid-cols-2 gap-2">
+              {categories.map((cat) => (
+                <Link key={cat.slug} to={`/products?category=${cat.slug}`} onClick={() => setMenuOpen(false)} className="flex min-w-0 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-semibold text-slate-700 transition-colors hover:border-cyan-300 hover:bg-cyan-50">
+                  <span className="text-base">{cat.icon}</span>
+                  <span className="truncate">{cat.name}</span>
+                </Link>
+              ))}
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <Link to="/cart" onClick={() => setMenuOpen(false)} className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#0B1E36] px-3 text-sm font-bold text-white transition hover:bg-[#142B49]">
                 <ShoppingCart className="h-4 w-4" />
-                View Cart {totalItems > 0 && `(${totalItems})`}
+                Cart {totalItems > 0 && `(${totalItems})`}
               </Link>
-              <button
-                type="button"
-                onClick={() => openWhatsAppWithTracking("Header Mobile Menu", "Hi! I need help choosing a water purifier.")}
-                className="min-h-12 rounded-full bg-[#087B55] px-3 py-3 text-center text-sm font-bold text-white shadow-sm transition hover:bg-[#066848] active:scale-[0.98]"
-              >
-                WhatsApp Us
+              <button type="button" onClick={() => { setMenuOpen(false); openWhatsAppWithTracking("Header Mobile Menu", "Hi! I need help choosing a water purifier."); }} className="min-h-11 rounded-lg bg-[#087B55] px-3 text-sm font-bold text-white transition hover:bg-[#066848]">
+                WhatsApp
               </button>
             </div>
           </nav>
         </div>
-      </div>
+      )}
     </header>
   );
 }
