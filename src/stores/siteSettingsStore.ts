@@ -95,13 +95,13 @@ const defaultSettings: SiteSettings = {
       title: "Commercial Water Solutions",
       desc: "Enhance purity, elevate performance. Solutions for your commercial needs.",
       link: "/products?category=commercial",
-      image: catCommercial,
+      image: "/images/home-hero-industrial-800.webp",
     },
     {
       title: "Industrial Water Solutions",
       desc: "High-capacity solutions designed for demanding industrial purification needs.",
       link: "/products?category=uv-purifiers",
-      image: "/images/home-hero-industrial-800.webp",
+      image: catCommercial,
     },
     {
       title: "Filters & Accessories",
@@ -128,11 +128,18 @@ const normalizeSettings = (settings?: Partial<SiteSettings>): SiteSettings => ({
   homepageSolutions: (settings?.homepageSolutions?.length
     ? settings.homepageSolutions
     : defaultSettings.homepageSolutions
-  ).map((solution) =>
-    solution.title === "Industrial Water Solutions" && solution.image === catUv
-      ? { ...solution, image: "/images/home-hero-industrial-800.webp" }
-      : solution
-  ),
+  ).map((solution) => {
+    if (solution.title === "Commercial Water Solutions" && solution.image === catCommercial) {
+      return { ...solution, image: "/images/home-hero-industrial-800.webp" };
+    }
+    if (
+      solution.title === "Industrial Water Solutions" &&
+      (solution.image === catUv || solution.image === "/images/home-hero-industrial-800.webp")
+    ) {
+      return { ...solution, image: catCommercial };
+    }
+    return solution;
+  }),
 });
 
 export const useSiteSettingsStore = create<SiteSettingsStore>()(
@@ -143,7 +150,7 @@ export const useSiteSettingsStore = create<SiteSettingsStore>()(
     }),
     {
       name: "aquasafe-site-settings",
-      version: 6,
+      version: 7,
       migrate: (persistedState) => {
         const state = persistedState as { settings?: Partial<SiteSettings> } | undefined;
         const raw: Partial<SiteSettings> = { ...(state?.settings || {}) };
