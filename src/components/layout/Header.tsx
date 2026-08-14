@@ -110,7 +110,6 @@ export default function Header() {
               className="h-[41px] w-[75px] rounded-xl bg-white object-contain px-1 shadow-sm transition-shadow group-hover:shadow-md lg:h-[72px] lg:w-[140px]"
               width="140"
               height="72"
-              fetchPriority="high"
             />
           </Link>
 
