@@ -149,7 +149,7 @@ export default function Header() {
               type="button"
               onClick={() => openWhatsAppWithTracking("Mobile Header CTA", "Hi! I want to order a water purifier. Please help me choose the right model.")}
               className="mr-0.5 inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-[#34D399]/30 bg-[#087B55] px-3.5 text-xs font-bold text-white shadow-[0_6px_16px_-8px_rgba(16,185,129,0.9)] transition-all hover:bg-[#066848] active:scale-[0.98] md:hidden"
-              aria-label="Order on WhatsApp"
+              aria-label="Order Now on WhatsApp"
             >
               <img src="/images/whatsapp-logo.svg" alt="" aria-hidden="true" className="h-[18px] w-[18px] shrink-0 brightness-0 invert" />
               <span className="hidden min-[360px]:inline">Order Now</span>
