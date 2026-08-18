@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Check, Pencil, PlusCircle, Search, Trash2 } from "lucide-react";
 import { useProductStore } from "@/stores/productStore";
+import { Checkbox } from "@/components/ui/checkbox";
 import { categories } from "@/data/categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,7 @@ export default function ProductsList() {
   const { products, deleteProduct, updateProduct } = useProductStore();
   const [search, setSearch] = useState("");
   const [priceDrafts, setPriceDrafts] = useState<Record<string, string>>({});
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const { toast } = useToast();
 
   const filtered = search
@@ -42,6 +44,30 @@ export default function ProductsList() {
 
   const getCategoryName = (slug: string) =>
     categories.find((c) => c.slug === slug)?.name || slug;
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filtered.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filtered.map((p) => p.id));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((current) =>
+      current.includes(id) ? current.filter((x) => x !== id) : [...current, id]
+    );
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      await Promise.all(selectedIds.map((id) => deleteProduct(id)));
+      toast({ title: "Products deleted", description: `${selectedIds.length} products have been removed.` });
+      setSelectedIds([]);
+    } catch {
+      toast({ title: "Bulk delete failed", description: "Some products could not be removed.", variant: "destructive" });
+    }
+  };
 
   const handleDelete = async (id: string, name: string) => {
     try {
@@ -77,11 +103,36 @@ export default function ProductsList() {
           <h2 className="font-heading font-bold text-2xl text-foreground">Products</h2>
           <p className="text-sm text-muted-foreground">{products.length} total products</p>
         </div>
-        <Link to="/admin/products/new">
-          <Button>
-            <PlusCircle className="h-4 w-4 mr-2" /> Add Product
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          {selectedIds.length > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">
+                  <Trash2 className="h-4 w-4 mr-2" /> Delete Selected ({selectedIds.length})
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Products</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete {selectedIds.length} products? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleBulkDelete}>
+                    Delete All
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+          <Link to="/admin/products/new">
+            <Button>
+              <PlusCircle className="h-4 w-4 mr-2" /> Add Product
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="relative max-w-sm">
@@ -98,6 +149,13 @@ export default function ProductsList() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox 
+                  checked={filtered.length > 0 && selectedIds.length === filtered.length}
+                  onCheckedChange={toggleSelectAll}
+                  aria-label="Select all"
+                />
+              </TableHead>
               <TableHead>Product</TableHead>
               <TableHead className="hidden md:table-cell">SKU</TableHead>
               <TableHead className="hidden sm:table-cell">Category</TableHead>
@@ -108,7 +166,14 @@ export default function ProductsList() {
           </TableHeader>
           <TableBody>
             {filtered.map((product) => (
-              <TableRow key={product.id}>
+              <TableRow key={product.id} data-state={selectedIds.includes(product.id) ? "selected" : undefined}>
+                <TableCell>
+                  <Checkbox 
+                    checked={selectedIds.includes(product.id)}
+                    onCheckedChange={() => toggleSelect(product.id)}
+                    aria-label={`Select ${product.name}`}
+                  />
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 bg-surface rounded overflow-hidden shrink-0">
@@ -184,7 +249,7 @@ export default function ProductsList() {
             ))}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                   No products found
                 </TableCell>
               </TableRow>
