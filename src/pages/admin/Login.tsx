@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getRedirectResult, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { getRedirectResult, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { isAuthorizedAdmin } from "@/lib/adminAuth";
@@ -59,9 +59,10 @@ export default function AdminLogin() {
     setError("");
     setLoading(true);
 
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+
     try {
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: "select_account" });
       const result = await signInWithPopup(auth, provider);
       
       const user = result.user;
@@ -71,18 +72,33 @@ export default function AdminLogin() {
         await signOut(auth);
         setError("You are not allowed to access this page. Please use the correct admin email.");
       }
+      setLoading(false);
     } catch (signInError) {
       const code = typeof signInError === "object" && signInError && "code" in signInError ? String(signInError.code) : "";
+      
+      // Fallback to redirect if popup is blocked or fails due to COOP issues
+      if (code.includes("popup-blocked") || code.includes("popup-closed-by-user") || String(signInError).includes("Cross-Origin") || code === "auth/internal-error") {
+         try {
+            await signInWithRedirect(auth, provider);
+         } catch (fallbackError) {
+            setError("Both popup and redirect sign-in failed. Please try a different browser.");
+            setLoading(false);
+         }
+         return; // Let the redirect happen, don't set loading to false here
+      }
+
       if (code.includes("unauthorized-domain")) {
         setError("Google sign-in is not available on this website address. Please contact the administrator.");
       } else if (code.includes("operation-not-allowed")) {
         setError("Google sign-in is not enabled in Firebase Authentication.");
-      } else if (code.includes("popup-closed-by-user")) {
-        setError("Sign-in popup was closed before completing. Please try again.");
       } else {
-        setError("Google sign-in failed. Please try again.");
+        setError("Google sign-in failed. Attempting fallback to redirect... please wait or click again.");
+        // Try redirect anyway as a last resort
+        signInWithRedirect(auth, provider).catch(() => {
+          setError("Google sign-in failed completely. Please try again later.");
+        });
+        return;
       }
-    } finally {
       setLoading(false);
     }
   };
