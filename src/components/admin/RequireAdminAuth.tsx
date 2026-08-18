@@ -10,13 +10,26 @@ export default function RequireAdminAuth() {
   const location = useLocation();
 
   useEffect(() => {
+    let active = true;
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
+      if (active) {
+        setUser(currentUser);
+        setLoading(false);
+      }
     });
 
-    return unsubscribe;
-  }, []);
+    const timeout = setTimeout(() => {
+      if (active && loading) {
+        setLoading(false);
+      }
+    }, 5000);
+
+    return () => {
+      active = false;
+      clearTimeout(timeout);
+      unsubscribe();
+    };
+  }, [loading]);
 
   if (loading) {
     return (
