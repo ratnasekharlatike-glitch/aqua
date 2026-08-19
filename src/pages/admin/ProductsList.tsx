@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Check, Pencil, PlusCircle, Search, Trash2 } from "lucide-react";
 import { useProductStore } from "@/stores/productStore";
 import { Checkbox } from "@/components/ui/checkbox";
-import { categories } from "@/data/categories";
+import { useCategoryStore } from "@/stores/categoryStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,6 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function ProductsList() {
   const { products, deleteProduct, updateProduct } = useProductStore();
+  const categories = useCategoryStore((s) => s.categories);
   const [search, setSearch] = useState("");
   const [priceDrafts, setPriceDrafts] = useState<Record<string, string>>({});
   const [selectedIds, setSelectedIds] = useState<string[]>([]);

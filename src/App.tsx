@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
 import ScrollToTop from "@/components/ScrollToTop";
 import { startProductSync } from "@/stores/productStore";
+import { startCategorySync } from "@/stores/categoryStore";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
@@ -24,6 +25,7 @@ const CustomersPlaceholder = lazy(() => import("./pages/admin/CustomersPlacehold
 const SettingsPlaceholder = lazy(() => import("./pages/admin/SettingsPlaceholder"));
 const AdminLogin = lazy(() => import("./pages/admin/Login"));
 const BlogsManager = lazy(() => import("./pages/admin/BlogsManager"));
+const CategoriesManager = lazy(() => import("./pages/admin/CategoriesManager"));
 const HeroSettings = lazy(() => import("./pages/admin/HeroSettings"));
 const StatsSettings = lazy(() => import("./pages/admin/StatsSettings"));
 const SolutionsSettings = lazy(() => import("./pages/admin/SolutionsSettings"));
@@ -37,7 +39,12 @@ const App = () => {
     const scheduleSync = () => {
       // Keep Firebase and catalogue hydration out of the hero's critical path.
       startTimer = window.setTimeout(() => {
-        stopSync = startProductSync();
+        const stopProduct = startProductSync();
+        const stopCategory = startCategorySync();
+        stopSync = () => {
+          stopProduct();
+          stopCategory();
+        };
       }, 1000);
     };
 
@@ -80,6 +87,7 @@ const App = () => {
                 <Route path="products" element={<ProductsList />} />
                 <Route path="products/new" element={<ProductForm />} />
                 <Route path="products/edit/:id" element={<ProductForm />} />
+                <Route path="categories" element={<CategoriesManager />} />
                 <Route path="blogs" element={<BlogsManager />} />
                 <Route path="orders" element={<OrdersPlaceholder />} />
                 <Route path="customers" element={<CustomersPlaceholder />} />

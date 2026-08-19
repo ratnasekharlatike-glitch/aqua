@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, ShoppingCart, Search, ChevronDown, ChevronRight, User, MapPin, Phone } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
-import { categories } from "@/data/categories";
+import { useCategoryStore } from "@/stores/categoryStore";
 import { useSiteSettingsStore } from "@/stores/siteSettingsStore";
 import { openWhatsAppWithTracking } from "@/lib/whatsapp";
 
@@ -34,6 +34,7 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
+  const categories = useCategoryStore((s) => s.categories);
   const [hoveredCat, setHoveredCat] = useState(categories[0]?.slug || "");
   const totalItems = useCartStore((s) => s.totalItems());
   const megaTimeout = useRef<ReturnType<typeof setTimeout>>();
@@ -210,7 +211,11 @@ export default function Header() {
                     }`}
                   >
                     <span className="flex items-center gap-2">
-                      <span>{cat.icon}</span>
+                      {cat.icon?.startsWith("data:") || cat.icon?.startsWith("/") || cat.icon?.startsWith("http") ? (
+                        <img src={cat.icon} alt="" className="h-5 w-5 object-contain" />
+                      ) : (
+                        <span>{cat.icon}</span>
+                      )}
                       {cat.name}
                     </span>
                     <ChevronRight className="h-3.5 w-3.5 opacity-50" />
@@ -297,7 +302,11 @@ export default function Header() {
             <div className="grid grid-cols-2 gap-2">
               {categories.map((cat) => (
                 <Link key={cat.slug} to={`/products?category=${cat.slug}`} onClick={() => setMenuOpen(false)} className="flex min-w-0 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-semibold text-slate-700 transition-colors hover:border-cyan-300 hover:bg-cyan-50">
-                  <span className="text-base">{cat.icon}</span>
+                  {cat.icon?.startsWith("data:") || cat.icon?.startsWith("/") || cat.icon?.startsWith("http") ? (
+                    <img src={cat.icon} alt="" className="h-4 w-4 object-contain shrink-0" />
+                  ) : (
+                    <span className="text-base">{cat.icon}</span>
+                  )}
                   <span className="truncate">{cat.name}</span>
                 </Link>
               ))}

@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, X, ArrowUpDown } from "lucide-react";
 import { useProductStore } from "@/stores/productStore";
-import { categories } from "@/data/categories";
+import { useCategoryStore } from "@/stores/categoryStore";
 import ProductCard from "@/components/products/ProductCard";
 import Layout from "@/components/layout/Layout";
 import SEO from "@/components/SEO";
@@ -12,6 +12,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 
 export default function Products() {
   const products = useProductStore((s) => s.products);
+  const categories = useCategoryStore((s) => s.categories);
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSearch = searchParams.get("search") || "";
   const [search, setSearch] = useState(initialSearch);

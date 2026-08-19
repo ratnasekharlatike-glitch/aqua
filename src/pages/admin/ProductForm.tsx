@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, ExternalLink, GripVertical, ImagePlus, Plus, Save, Star, Trash2, X } from "lucide-react";
 import { useProductStore } from "@/stores/productStore";
-import { categories } from "@/data/categories";
+import { useCategoryStore } from "@/stores/categoryStore";
 import type { Product } from "@/data/products";
 import {
   categorySkuPrefix,
@@ -42,6 +42,7 @@ export default function ProductForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { products, addProduct, updateProduct } = useProductStore();
+  const categories = useCategoryStore((s) => s.categories);
   const { toast } = useToast();
   const settings = useSiteSettingsStore((s) => s.settings);
   const isEdit = Boolean(id);

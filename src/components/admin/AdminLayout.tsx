@@ -25,6 +25,7 @@ const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
   { icon: Package, label: "All Products", path: "/admin/products" },
   { icon: PlusCircle, label: "Add Product", path: "/admin/products/new" },
+  { icon: Layers, label: "Categories", path: "/admin/categories" },
   { icon: FileText, label: "Blogs", path: "/admin/blogs" },
   { icon: ShoppingCart, label: "Orders", path: "/admin/orders" },
   { icon: Users, label: "Customers", path: "/admin/customers" },
